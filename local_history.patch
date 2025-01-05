@@ -1,0 +1,107 @@
+Index: src/Concurrent/Barrior/Rocket1.java
+===================================================================
+diff --git a/src/Concurrent/Barrior/Rocket1.java b/src/Concurrent/Barrior/Rocket1.java
+deleted file mode 100644
+--- a/src/Concurrent/Barrior/Rocket1.java	
++++ /dev/null	
+@@ -1,23 +0,0 @@
+-package Concurrent.Rocket;
+-
+-import java.util.concurrent.CountDownLatch;
+-
+-public class Rocket1 implements Runnable {
+-    private final CountDownLatch countDownLatch;
+-
+-    public Rocket1(CountDownLatch countDownLatch) {
+-        this.countDownLatch = countDownLatch;
+-    }
+-
+-
+-    @Override
+-    public void run() {
+-        System.out.println("Ракета готовиться к запуску");
+-        try {
+-            countDownLatch.await();//ожидаем пока остальные детали не будут сделаны
+-            System.out.println("Пуск!!!");
+-        } catch (InterruptedException e) {
+-        e.printStackTrace();
+-        }
+-    }
+-}
+Index: src/Concurrent/Barrior/RocketDetail.java
+===================================================================
+diff --git a/src/Concurrent/Barrior/RocketDetail.java b/src/Concurrent/Barrior/RocketDetail.java
+deleted file mode 100644
+--- a/src/Concurrent/Barrior/RocketDetail.java	
++++ /dev/null	
+@@ -1,9 +0,0 @@
+-package Concurrent.Rocket;
+-
+-public enum RocketDetail {
+-    PART1,
+-    PART2,
+-    PART3,
+-    PART4,
+-    PART5
+-}
+Index: src/Concurrent/Barrior/LatchDemo.java
+===================================================================
+diff --git a/src/Concurrent/Barrior/LatchDemo.java b/src/Concurrent/Barrior/LatchDemo.java
+deleted file mode 100644
+--- a/src/Concurrent/Barrior/LatchDemo.java	
++++ /dev/null	
+@@ -1,22 +0,0 @@
+-package Concurrent.Rocket;
+-
+-import java.lang.reflect.Array;
+-import java.util.Arrays;
+-import java.util.concurrent.CountDownLatch;
+-import java.util.concurrent.ExecutorService;
+-import java.util.concurrent.Executors;
+-import java.util.concurrent.TimeUnit;
+-
+-public class LatchDemo {
+-    public static void main(String[] args) throws InterruptedException {
+-        CountDownLatch countDownLatch = new CountDownLatch(RocketDetail.values().length);
+-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+-        executorService.submit(new Rocket1(countDownLatch));
+-        Arrays.stream(RocketDetail.values())
+-                .map(rocketDetail -> new RocketDetailRun(rocketDetail,countDownLatch))
+-                .forEach(executorService::submit);
+-        executorService.shutdown();
+-        boolean b = executorService.awaitTermination(5, TimeUnit.SECONDS);
+-
+-    }
+-}
+Index: src/Concurrent/Barrior/RocketDetailRun.java
+===================================================================
+diff --git a/src/Concurrent/Barrior/RocketDetailRun.java b/src/Concurrent/Barrior/RocketDetailRun.java
+deleted file mode 100644
+--- a/src/Concurrent/Barrior/RocketDetailRun.java	
++++ /dev/null	
+@@ -1,25 +0,0 @@
+-package Concurrent.Rocket;
+-
+-import java.util.concurrent.CountDownLatch;
+-
+-public class RocketDetailRun implements Runnable {
+-    private final RocketDetail rocketDetail;
+-    private final CountDownLatch countDownLatch;
+-
+-    public RocketDetailRun(RocketDetail rocketDetail, CountDownLatch countDownLatch) {
+-        this.rocketDetail = rocketDetail;
+-        this.countDownLatch = countDownLatch;
+-    }
+-
+-    @Override
+-    public void run() {
+-        System.out.println("Готовиться деталь: "+ rocketDetail);
+-        try {
+-            Thread.sleep(5_000);
+-            System.out.println("Деталь готова: "+rocketDetail);
+-            countDownLatch.countDown();
+-        } catch (InterruptedException e) {
+-            e.printStackTrace();
+-        }
+-    }
+-}
