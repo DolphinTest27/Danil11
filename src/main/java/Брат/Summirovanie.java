@@ -41,6 +41,7 @@ class Summirovanietest {
         ss.sum(1,2);
         ss.sum(1,2,3);
         ss.sum(1,2,3,4);
+        System.out.println("Помогаю брату");
 
 
     }
